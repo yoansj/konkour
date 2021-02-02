@@ -8,10 +8,11 @@ import {
 
 import { createMuiTheme, MuiThemeProvider } from '@material-ui/core/styles';
 
-import Home from './Pages/Home/Components/Login/Home';
 import Register from './Pages/Register/Register';
 import Footer from './Pages/Components/Footer';
 import Login from './Pages/Login/Login';
+import Header from './Pages/Components/Header';
+import Home from './Pages/Home/Home';
 
 const theme = createMuiTheme({
   palette: {
@@ -28,6 +29,7 @@ function App() {
   return (
     <MuiThemeProvider theme={theme}>
       <Router>
+      <Header isConnected={false} />
         <Switch>
           <Route path="/login">
             <Login />

@@ -16,7 +16,8 @@ const useStyles = makeStyles((theme: Theme) =>
       marginTop: "10%",
     },
     textField: {
-      width: 400
+      width: 400,
+      margin: 10,
     }
   }),
 );

@@ -3,7 +3,6 @@ import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import LogoSvg from './LogoSvg';
-import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
@@ -56,7 +55,7 @@ export default function Header(props: HeaderProps) {
       <div>
         <AppBar position="static">
           <Toolbar>
-            <IconButton edge="start">
+            <IconButton edge="start" onClick={() => window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}>
               <LogoSvg />
             </IconButton>
             <Typography variant="h4">
@@ -64,8 +63,9 @@ export default function Header(props: HeaderProps) {
             </Typography>
             <div className={classes.links}>
               <Link style={{float: "right", color: "white", fontSize: "2rem", marginRight: 10}} to="/signup">S'inscrire</Link>
-              <Link style={{float: "right", color: "white", fontSize: "2rem", marginRight: 10}} to="/login">Connexion</Link>
-              <Link style={{float: "right", color: "white", fontSize: "2rem", marginRight: 50}} to="/login">Stats</Link>
+              <Link style={{float: "right", color: "white", fontSize: "2rem", marginRight: 20}} to="/login">Connexion</Link>
+              <Link style={{float: "right", color: "white", fontSize: "2rem", marginRight: 70}} to="/login">Stats</Link>
+              <Link style={{float: "right", color: "white", fontSize: "2rem", marginRight: 20}} to="/">Accueil</Link>
             </div>
           </Toolbar>
         </AppBar>
