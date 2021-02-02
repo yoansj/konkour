@@ -41,7 +41,7 @@ export default function Login(): any {
         process.env.REACT_APP_AUTH ? process.env.REACT_APP_AUTH : "XXX",
         JSON.stringify(user.user)
       );
-      history.push('/home');
+      history.push('/contests');
     })
     .catch((error) => {
       Swal.fire({

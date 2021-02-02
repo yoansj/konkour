@@ -13,6 +13,9 @@ import Footer from './Pages/Components/Footer';
 import Login from './Pages/Login/Login';
 import Header from './Pages/Components/Header';
 import Home from './Pages/Home/Home';
+import ConnectedRoute from './Pages/Components/ConnectedRoute';
+import Contests from './Pages/Contests/Contests';
+import Profile from './Pages/Profile/Profile';
 
 const theme = createMuiTheme({
   palette: {
@@ -40,6 +43,12 @@ function App() {
           <Route path="/signup">
             <Register />
           </Route>
+          <ConnectedRoute path="/contests">
+            <Contests />
+          </ConnectedRoute>
+          <ConnectedRoute path="/profile">
+            <Profile />
+          </ConnectedRoute>
           <Route path="/">
             <Home />
           </Route>
