@@ -32,7 +32,7 @@ function App() {
   return (
     <MuiThemeProvider theme={theme}>
       <Router>
-      <Header isConnected={false} />
+      <Header />
         <Switch>
           <Route path="/login">
             <Login />

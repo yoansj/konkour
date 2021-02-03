@@ -34,7 +34,6 @@ export default function Register(): any {
   const attemptToRegister = (): void => {
     auth.createUserWithEmailAndPassword(email, password)
     .then((user) => {
-      window.localStorage.setItem(process.env.REACT_APP_AUTH ? process.env.REACT_APP_AUTH : "XXX", JSON.stringify(user.user));
       Swal.fire({
         title: 'Compte créé',
         text: "Vous pouvez désormais vous connecter à votre compte :)",

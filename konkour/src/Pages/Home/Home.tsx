@@ -80,7 +80,7 @@ export default function Home() {
               />
               <TextField
                 variant="filled"
-                label="Votre adresse mail magique"
+                label="Un mot de passe solide comme un roc"
                 type="password"
                 value="jadorekonkour123456"
                 className={classes.textField}
@@ -97,7 +97,7 @@ export default function Home() {
           </Grid>
           <Grid>
             <h3 style={{ textAlign: "center", fontWeight: "normal" }}>
-              3. Tu participes
+              3. Tu participes sans effort
             </h3>
             <Card className={classes.cardRoot}>
               Les boutons pour participer ici
