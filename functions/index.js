@@ -17,6 +17,7 @@ exports.initUserAccount = functions.auth.user().onCreate((user) => {
     id: user.uid,
     firstConnection: true,
     allowStatsTracking: true,
+    isAdmin: false,
   });
 });
 

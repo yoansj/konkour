@@ -16,6 +16,7 @@ import Home from './Pages/Home/Home';
 import ConnectedRoute from './Pages/Components/ConnectedRoute';
 import Contests from './Pages/Contests/Contests';
 import Profile from './Pages/Profile/Profile';
+import Admin from './Pages/Admin/Admin';
 
 const theme = createMuiTheme({
   palette: {
@@ -48,6 +49,9 @@ function App() {
           </ConnectedRoute>
           <ConnectedRoute path="/profile">
             <Profile />
+          </ConnectedRoute>
+          <ConnectedRoute path="/admin">
+            <Admin />
           </ConnectedRoute>
           <Route path="/">
             <Home />
