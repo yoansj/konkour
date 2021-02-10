@@ -6,6 +6,8 @@ import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { db } from '../../../Firebase/firebase';
+import RawContest from '../../Components/RawContest';
+import { RawContestType } from '../../../Firebase/dataTypes';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -50,7 +52,8 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "auto",
       height: 750,
       margin: 30,
-      marginLeft: -295
+      marginLeft: -295,
+      overflow: "auto"
     }
   }),
 );
@@ -62,7 +65,7 @@ export default function NotPostedContests() {
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [autoRefreshTiming, setAutoRefreshTiming] = useState<number | number[]>(30);
   const [autoRefreshInterval, setAutoRefreshInterval] = useState<number | null>(null);
-  const [contests, setContests] = useState<any[] | null>(null);
+  const [contests, setContests] = useState<RawContestType[] | null>(null);
 
   const getContests = () => {
     db.collection("waiting-contests").get().then((querySnapshot) => {
@@ -102,9 +105,22 @@ export default function NotPostedContests() {
         </Card>
       </Grid>
       <Grid item xs={8}>
-        <Card className={classes.contestsCard}>
-          Les concours seront affichés ici
-        </Card>
+        <div className={classes.contestsCard}>
+          {contests ? contests.map((contest: RawContestType) =>
+            <RawContest
+              author={contest.author}
+              contestDate={contest.contestDate}
+              harvestDate={contest.harvestDate}
+              url={contest.url}
+              sourceType={contest.sourceType}
+              key={contest.id}
+              twRt={contest.twRt}
+              twComment={contest.twComment}
+              twFav={contest.twFav}
+              twFollow={contest.twFollow}
+            />
+          ): []}
+        </div>
       </Grid>
     </Grid>
   )

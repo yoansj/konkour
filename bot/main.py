@@ -182,7 +182,7 @@ def searchArrayInText(array, text: str):
     """
     foundWords = 0
     for elem in array:
-        if elem.lower() in text.lower():
+        if text.lower().find(elem.lower()) != -1:
             foundWords = foundWords + 1
             #print("Found word: {}".format(elem))
     return foundWords, len(array)
@@ -232,6 +232,12 @@ COMMENT_WORDS = os.getenv("BOT_COMMENT").split(",")
 MIN_WAIT = int(os.getenv("BOT_MIN_WAIT"))
 MAX_WAIT = int(os.getenv("BOT_MAX_WAIT"))
 
+print(CONTEST_WORDS, RT_WORDS, FAV_WORDS, FOLLOW_WORDS, COMMENT_WORDS)
+
 print("All good starting to harvest contests 😃")
 
-Stream.filter(track=os.getenv("BOT_TRACK").split(","), is_async=True, languages=["fr"])
+try:
+    Stream.filter(track=os.getenv("BOT_TRACK").split(","), languages=["fr"])
+except:
+    print("Error happened relaunching")
+    Stream.filter(track=os.getenv("BOT_TRACK").split(","), languages=["fr"])

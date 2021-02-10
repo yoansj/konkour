@@ -1,3 +1,6 @@
+import firebase from 'firebase/app';
+import "firebase/firestore";
+
 export type RawContestType = {
     /**
      * Author of the contest
@@ -7,12 +10,12 @@ export type RawContestType = {
     /**
      * Original date of the contest
      */
-    contestDate: Date,
+    contestDate: firebase.firestore.Timestamp,
 
     /**
      * Date when the contest was harvested
      */
-    harvestDate: Date,
+    harvestDate: firebase.firestore.Timestamp,
 
     /**
      * Url of the source contest
@@ -25,6 +28,11 @@ export type RawContestType = {
      * ! In reality only Twitter is supported
      */
     sourceType: "twitter" | "instagram" | "other";
+
+    /**
+     * Id of the contest
+     */
+    id?: string
 
     /* These are only valid for a Twitter contest */
 
