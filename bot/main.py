@@ -11,7 +11,7 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 
 class Contest():
-    def __init__(self, author: str, url: str, rt, fav, follow, comment, tweetDate, date):
+    def __init__(self, author: str, url: str, rt, fav, follow, comment, tweetDate, date, text):
         self.author = author
         self.url = url
         self.rt = rt
@@ -20,6 +20,7 @@ class Contest():
         self.comment = comment
         self.tweetDate = tweetDate
         self.date = date
+        self.text = text
 
 class Bot(tweepy.StreamListener):
     """This class is used as a StreamListener to stream tweets
@@ -41,6 +42,7 @@ class Bot(tweepy.StreamListener):
             u'twFav': contest.fav,
             u'twFollow': contest.follow,
             u'twRt': contest.rt,
+            u'originalText': contest.text,
         })
 
     def sendWaitingContests(self):
@@ -66,7 +68,6 @@ class Bot(tweepy.StreamListener):
             if url == contest.url:
                 return True
         for doc in db.collection(u'waiting-contests').stream():
-            #print(doc.to_dict()["url"])
             if doc.to_dict()["url"] == url:
                 return True
         return False
@@ -77,6 +78,9 @@ class Bot(tweepy.StreamListener):
             print("Contest already processed exiting !");
             return
         try:
+            if searchArrayInText(BANWORDS, status.retweeted_status.full_text)[0] != 0:
+                print("Banword found exit !")
+                return
             contest, contestMax = searchArrayInText(CONTEST_WORDS, status.retweeted_status.full_text)
             if contest == 0:
                 print("Not enough contest words exit")
@@ -85,7 +89,11 @@ class Bot(tweepy.StreamListener):
             fav, favMax = searchArrayInText(FAV_WORDS, status.retweeted_status.full_text)
             follow, followMax = searchArrayInText(FOLLOW_WORDS, status.retweeted_status.full_text)
             comment, commentMax = searchArrayInText(COMMENT_WORDS, status.retweeted_status.full_text)
+            text = status.retweeted_status.full_text
         except AttributeError:
+            if searchArrayInText(BANWORDS, status.retweeted_status.text)[0] != 0:
+                print("Banword found exit !")
+                return
             contest, contestMax = searchArrayInText(CONTEST_WORDS, status.retweeted_status.text)
             if contest == 0:
                 print("Not enough contest words exit")
@@ -94,6 +102,7 @@ class Bot(tweepy.StreamListener):
             fav, favMax = searchArrayInText(FAV_WORDS, status.retweeted_status.text)
             follow, followMax = searchArrayInText(FOLLOW_WORDS, status.retweeted_status.text)
             comment, commentMax = searchArrayInText(COMMENT_WORDS, status.retweeted_status.text)
+            text = status.retweeted_status.text
         print("RT:{} RTMAX:{} FAV:{} FAVMAX:{} FOLLOW:{} FOLLOWMAX:{} COM:{} COMMAX:{}".format(rt, rtMax, fav, favMax, follow, followMax, comment, commentMax))
         if rt == 0 and fav == 0 and follow == 0 and comment == 0:
             print("Probably not a contest exit")
@@ -107,7 +116,8 @@ class Bot(tweepy.StreamListener):
                 [follow, followMax],
                 [comment, commentMax],
                 status.retweeted_status.created_at,
-                datetime.datetime.now()
+                datetime.datetime.now(),
+                text
             ))
 
     def processTweet(self, status):
@@ -116,6 +126,9 @@ class Bot(tweepy.StreamListener):
             print("Contest already processed exiting !");
             return
         try:
+            if searchArrayInText(BANWORDS, status.extended_tweet.full_text)[0] != 0:
+                print("Banword found exit !")
+                return
             contest, contestMax = searchArrayInText(CONTEST_WORDS, status.extended_tweet.full_text)
             if contest == 0:
                 print("Not enough contest words exit")
@@ -124,7 +137,11 @@ class Bot(tweepy.StreamListener):
             fav, favMax = searchArrayInText(FAV_WORDS, status.extended_tweet.full_text)
             follow, followMax = searchArrayInText(FOLLOW_WORDS, status.extended_tweet.full_text)
             comment, commentMax = searchArrayInText(COMMENT_WORDS, status.extended_tweet.full_text)
+            text = status.extended_tweet.full_text
         except AttributeError:
+            if searchArrayInText(BANWORDS, status.text)[0] != 0:
+                print("Banword found exit !")
+                return
             contest, contestMax = searchArrayInText(CONTEST_WORDS, status.text)
             if contest == 0:
                 print("Not enough contest words exit")
@@ -133,6 +150,7 @@ class Bot(tweepy.StreamListener):
             fav, favMax = searchArrayInText(FAV_WORDS, status.text)
             follow, followMax = searchArrayInText(FOLLOW_WORDS, status.text)
             comment, commentMax = searchArrayInText(COMMENT_WORDS, status.text)
+            text = status.text
         print("RT:{} RTMAX:{} FAV:{} FAVMAX:{} FOLLOW:{} FOLLOWMAX:{} COM:{} COMMAX:{}".format(rt, rtMax, fav, favMax, follow, followMax, comment, commentMax))
         if rt == 0 and fav == 0 and follow == 0 and comment == 0:
             print("Probably not a contest exit")
@@ -146,7 +164,8 @@ class Bot(tweepy.StreamListener):
                 [follow, followMax],
                 [comment, commentMax],
                 status.created_at,
-                datetime.datetime.now()
+                datetime.datetime.now(),
+                text
             ))
 
     def on_status(self, status):
@@ -204,6 +223,7 @@ checkEnv("BOT_FOLLOW")
 checkEnv("BOT_COMMENT")
 checkEnv("BOT_MIN_WAIT")
 checkEnv("BOT_MAX_WAIT")
+checkEnv("BOT_BANWORDS")
 
 print("⏲️ Trying to log in...")
 
@@ -229,6 +249,7 @@ RT_WORDS = os.getenv("BOT_RT").split(",")
 FAV_WORDS = os.getenv("BOT_FAV").split(",")
 FOLLOW_WORDS = os.getenv("BOT_FOLLOW").split(",")
 COMMENT_WORDS = os.getenv("BOT_COMMENT").split(",")
+BANWORDS = os.getenv("BOT_BANWORDS").split(",")
 MIN_WAIT = int(os.getenv("BOT_MIN_WAIT"))
 MAX_WAIT = int(os.getenv("BOT_MAX_WAIT"))
 
