@@ -53,7 +53,10 @@ const useStyles = makeStyles((theme: Theme) =>
       height: 750,
       margin: 30,
       marginLeft: -295,
-      overflow: "auto"
+      overflowY: "scroll",
+      "& > *": {
+        marginTop: 30
+      }
     }
   }),
 );
@@ -64,11 +67,12 @@ export default function NotPostedContests() {
 
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [autoRefreshTiming, setAutoRefreshTiming] = useState<number | number[]>(30);
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState<number | null>(null);
+  const [refresh, setRefresh] = useState(false);
+  //const [autoRefreshInterval, setAutoRefreshInterval] = useState<number | null>(null);
   const [contests, setContests] = useState<RawContestType[] | null>(null);
 
   const getContests = () => {
-    db.collection("waiting-contests").get().then((querySnapshot) => {
+    db.collection("waiting-contests").limit(20).get().then((querySnapshot) => {
       let ct:any[] = [];
       querySnapshot.forEach((doc) => {
         ct.push({...doc.data(), id: doc.id})
@@ -79,7 +83,19 @@ export default function NotPostedContests() {
 
   useEffect(() => {
     getContests();
-  }, [])
+  }, [refresh])
+
+  const deleteElem = (index: number, id: string) => {
+    if (contests) {
+      let beg = contests.slice(0, index);
+      let end = contests.slice(index + 1, contests.length - 1);
+      setContests(beg.concat(end));
+      console.log("Delete called !", index);
+      db.collection("waiting-contests").doc(id).delete().then(
+        (res) => console.log("Concours supprimé: ", res)
+      )
+    }
+  }
 
   return (
     <Grid direction="row" container>
@@ -95,9 +111,12 @@ export default function NotPostedContests() {
             onChange={(e, nb) => setAutoRefreshTiming(nb)}
             style={{width: 250, marginBottom: 20}}
             disabled={!autoRefresh}
-          / >
+          />
           <Button variant="outlined" color="primary" onClick={() => setAutoRefresh(!autoRefresh)}>
             {autoRefresh ? "Désactiver l'auto refresh" : "Activer l'auto refresh"}
+          </Button>
+          <Button variant="outlined" color="primary" onClick={() => setRefresh(!refresh)}>
+            Rafraichir
           </Button>
         </Card>
         <Card className={classes.otherCard}>
@@ -106,7 +125,7 @@ export default function NotPostedContests() {
       </Grid>
       <Grid item xs={8}>
         <div className={classes.contestsCard}>
-          {contests ? contests.map((contest: RawContestType) =>
+          {contests ? contests.map((contest: RawContestType, index: number) =>
             <RawContest
               author={contest.author}
               contestDate={contest.contestDate}
@@ -118,6 +137,8 @@ export default function NotPostedContests() {
               twComment={contest.twComment}
               twFav={contest.twFav}
               twFollow={contest.twFollow}
+              originalText={contest.originalText}
+              deleteFunction={() => deleteElem(index, contest.id || "Nothing")}
             />
           ): []}
         </div>

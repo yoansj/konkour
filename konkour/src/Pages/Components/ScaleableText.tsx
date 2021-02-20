@@ -27,7 +27,6 @@ type ScaleableTextProps = {
     | 'overline'
     | 'srOnly'
     | 'inherit',
-  
   children: React.ReactNode,
 }
 

@@ -2,14 +2,16 @@ import React from 'react';
 
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import DeleteIcon from '@material-ui/icons/Delete';
 import Tooltip from '@material-ui/core/Tooltip';
 import AccessTimeIcon from '@material-ui/icons/AccessTime';
-import Divider from '@material-ui/core/Divider';
 import CheckIcon from '@material-ui/icons/Check';
+import DescriptionIcon from '@material-ui/icons/Description';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 
 import { RawContestType } from '../../Firebase/dataTypes';
-import { BotSvg } from './LogoSvg';
+import Swal from 'sweetalert2';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -22,6 +24,9 @@ const useStyles = makeStyles((theme: Theme) =>
       width: 600,
       height: 400,
       marginBottom: 30,
+      "& > *": {
+        margin: 10
+      }
     },
   }),
 );
@@ -57,63 +62,54 @@ function SourceRenderer(props: SourceRendererProps) {
   )
 }
 
+type FunctionnalProps = {
+  /**
+   * Function called on delete
+   */
+  deleteFunction: Function,
+}
 
-export default function RawContest(props: RawContestType) {
+// https://stackoverflow.com/questions/55969554/react-prop-separation-based-on-multiple-typescript-interfaces
+export default function RawContest(props: RawContestType & FunctionnalProps) {
 
   const classes = useStyles();
 
+  const openTextModal = (text: string) => {
+    Swal.fire({
+      text,
+      showCloseButton: true,
+    })
+  }
+
   return (
     <div className={classes.mainCard}>
-      <Grid container direction="row" justify="flex-start" alignItems="stretch">
-        <SourceRenderer
-          style={{ width: 50, height: 50 }}
-          sourceType={props.sourceType}
-          url={props.url}
-        />
+      <Grid container direction="column" justify="space-evenly" alignItems="flex-start">
         <Grid
           container
-          direction="column"
+          item
+          direction="row"
           justify="flex-start"
           alignItems="flex-start"
-          item
-          xs={3}
-        >
-          <h1 style={{ marginTop: 10, marginBottom: 10 }}>{props.author}</h1>
-          <Tooltip title="Date à laquelle le concours a été posté" arrow>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                margin: 0,
-              }}
-            >
-              <AccessTimeIcon style={{ marginRight: 5 }} />
-              <p style={{ fontSize: 20, margin: 5 }}>
-                {props.contestDate.toDate().toLocaleDateString()}
-              </p>
-            </div>
-          </Tooltip>
-          <Tooltip
-            title="Date à laquelle le bot a trouvé le concours"
-            placement="bottom"
+          xs={12}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                margin: 0,
-              }}
-            >
-              <BotSvg style={{ marginRight: 5 }} />
-              <p style={{ fontSize: 20, margin: 5, marginBottom: 10 }}>
-                {props.harvestDate.toDate().toLocaleDateString()}
-              </p>
+            <div style={{display: "inline-block"}}>
+              <SourceRenderer
+                style={{ width: 50, height: 50 , display: "inline-block"}}
+                sourceType={props.sourceType}
+                url={props.url}
+              />
+              <h1 style={{ marginLeft: 5, display: "inline-block"}}>{props.author}</h1>
             </div>
-          </Tooltip>
-          <Divider orientation="vertical" />
-        </Grid>
+            <Tooltip title={"Posté le " + props.contestDate.toDate().toLocaleDateString() + " et trouvé par le bot le " + props.harvestDate.toDate().toLocaleDateString()} arrow>
+              <AccessTimeIcon fontSize="large" style={{marginTop: 24, marginLeft: 5}} />
+            </Tooltip>
+            <IconButton onClick={() => openTextModal(props.originalText)} style={{marginTop: 13, marginLeft: 5}}>
+              <DescriptionIcon fontSize="large" />
+            </IconButton>
+            <IconButton onClick={() => props.deleteFunction()} style={{marginTop: 13, marginLeft: 5}}>
+              <DeleteIcon fontSize="large" style={{color: "red"}} />
+            </IconButton>
+          </Grid>
         <Grid
           container
           direction="column"

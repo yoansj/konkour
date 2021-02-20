@@ -68,6 +68,11 @@ export type RawContestType = {
      */
     twRt?: any[];
 
+    /**
+     * Original text of the tweet
+     */
+    originalText: string;
+
     /* These are only valid for a Twitter contest */
 
 }
