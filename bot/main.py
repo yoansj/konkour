@@ -37,13 +37,37 @@ class Bot(tweepy.StreamListener):
             u'contestDate': contest.tweetDate,
             u'harvestDate': contest.date,
             u'url': contest.url,
-            u'sourceTyoe': "twitter",
+            u'sourceType': "twitter",
             u'twComment': contest.comment,
             u'twFav': contest.fav,
             u'twFollow': contest.follow,
             u'twRt': contest.rt,
             u'originalText': contest.text,
         })
+
+    def updateStatus(self, status: str, contest: Contest):
+        if contest != None:
+            status_ref.update({
+                u'status': status,
+                u'lastUpdate': firestore.SERVER_TIMESTAMP,
+                u'contest': {
+                    u'author': contest.author,
+                    u'contestDate': contest.tweetDate,
+                    u'harvestDate': contest.date,
+                    u'url': contest.url,
+                    u'sourceType': "twitter",
+                    u'twComment': contest.comment,
+                    u'twFav': contest.fav,
+                    u'twFollow': contest.follow,
+                    u'twRt': contest.rt,
+                    u'originalText': contest.text,
+                }
+            })
+        else:
+            status_ref.update({
+                u'status': status,
+                u'lastUpdate': firestore.SERVER_TIMESTAMP,
+            })
 
     def sendWaitingContests(self):
         if self.lastSend == None and len(self.contestsToSend) >= 10:
@@ -155,6 +179,17 @@ class Bot(tweepy.StreamListener):
         if rt == 0 and fav == 0 and follow == 0 and comment == 0:
             print("Probably not a contest exit")
             return
+        self.updateStatus("tweet_processed", Contest(
+                status.user.screen_name,
+                "https://twitter.com/" + status.user.screen_name + "/status/" + status.id_str,
+                [rt, rtMax],
+                [fav, favMax],
+                [follow, followMax],
+                [comment, commentMax],
+                status.created_at,
+                datetime.datetime.now(),
+                text
+            ))
         self.contestsToSend.append(
             Contest(
                 status.user.screen_name,
@@ -175,6 +210,7 @@ class Bot(tweepy.StreamListener):
         else:
             self.processTweet(status)
         self.sendWaitingContests()
+        self.updateStatus("sleep", None);
         time.sleep(random.randrange(MIN_WAIT, MAX_WAIT))
 
 def checkEnv(variable):
@@ -213,25 +249,6 @@ checkEnv("API_SECRET")
 checkEnv("ACCESS_TOKEN")
 checkEnv("ACCESS_SECRET")
 
-print("🤖 Looking for Bot Variables...")
-
-checkEnv("BOT_TRACK")
-checkEnv("BOT_CONTEST")
-checkEnv("BOT_RT")
-checkEnv("BOT_FAV")
-checkEnv("BOT_FOLLOW")
-checkEnv("BOT_COMMENT")
-checkEnv("BOT_MIN_WAIT")
-checkEnv("BOT_MAX_WAIT")
-checkEnv("BOT_BANWORDS")
-
-print("⏲️ Trying to log in...")
-
-auth = tweepy.OAuthHandler(os.getenv("API_KEY"), os.getenv("API_SECRET"))
-auth.set_access_token(os.getenv("ACCESS_TOKEN"), os.getenv("ACCESS_SECRET"))
-
-api = tweepy.API(auth)
-
 print("🔥 Loading firebase config...")
 
 checkEnv("FIREBASE_CONFIG")
@@ -241,24 +258,39 @@ firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
+print("🤖 Looking for Bot Variables...")
+
+config_ref = db.collection(u'bot').document(u'config')
+status_ref = db.collection(u'bot').document(u'status')
+config = config_ref.get()
+config = config.to_dict()
+print("[FIREBASE CONFIG]\n", config, "[FIREBASE CONFIG]")
+
+CONTEST_WORDS = config["CONTEST"]
+RT_WORDS = config["RT"]
+FAV_WORDS = config["FAV"]
+FOLLOW_WORDS = config["FOLLOW"]
+COMMENT_WORDS = config["COMMENT"]
+BANWORDS = config["BANWORDS"]
+MIN_WAIT = config["MIN_WAIT"]
+MAX_WAIT = config["MAX_WAIT"]
+TRACK = config["TRACK"]
+
+print("⏲️ Trying to log in to Twitter...")
+
+auth = tweepy.OAuthHandler(os.getenv("API_KEY"), os.getenv("API_SECRET"))
+auth.set_access_token(os.getenv("ACCESS_TOKEN"), os.getenv("ACCESS_SECRET"))
+
+api = tweepy.API(auth)
+
 contestBot = Bot(api)
 Stream = tweepy.Stream(auth = api.auth, listener=contestBot)
 
-CONTEST_WORDS = os.getenv("BOT_CONTEST").split(",")
-RT_WORDS = os.getenv("BOT_RT").split(",")
-FAV_WORDS = os.getenv("BOT_FAV").split(",")
-FOLLOW_WORDS = os.getenv("BOT_FOLLOW").split(",")
-COMMENT_WORDS = os.getenv("BOT_COMMENT").split(",")
-BANWORDS = os.getenv("BOT_BANWORDS").split(",")
-MIN_WAIT = int(os.getenv("BOT_MIN_WAIT"))
-MAX_WAIT = int(os.getenv("BOT_MAX_WAIT"))
-
-print(CONTEST_WORDS, RT_WORDS, FAV_WORDS, FOLLOW_WORDS, COMMENT_WORDS)
-
 print("All good starting to harvest contests 😃")
+Bot.updateStatus(Bot, "boot", None)
 
 try:
-    Stream.filter(track=os.getenv("BOT_TRACK").split(","), languages=["fr"])
+    Stream.filter(track=TRACK, languages=["fr"])
 except:
     print("Error happened relaunching")
-    Stream.filter(track=os.getenv("BOT_TRACK").split(","), languages=["fr"])
+    Stream.filter(track=TRACK, languages=["fr"])
